@@ -231,7 +231,10 @@ bool rrc_reestablishment_procedure::verify_security_context()
   var_short_mac_input.source_c_rnti        = reestablishment_request.rrc_reest_request.ue_id.c_rnti;
   byte_buffer   var_short_mac_input_packed = {};
   asn1::bit_ref bref(var_short_mac_input_packed);
-  var_short_mac_input.pack(bref);
+  if (var_short_mac_input.pack(bref) != asn1::SRSASN_SUCCESS) {
+    logger.log_error("Failed to pack varShortMAC-Input");
+    return false;
+  }
 
   logger.log_debug(var_short_mac_input_packed.begin(),
                    var_short_mac_input_packed.end(),
