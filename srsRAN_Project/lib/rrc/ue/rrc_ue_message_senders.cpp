@@ -80,9 +80,18 @@ void rrc_ue_impl::send_identity_request()
   
   // Create a simple NAS Identity Request message
   // Note: This is a simplified implementation
-  nas_pdu.append(0x07); // NAS Security Header (Plain NAS message)
-  nas_pdu.append(0x40); // Identity Request message type
-  nas_pdu.append(0x01); // Request type: IMSI
+  if (!nas_pdu.append(0x07)) { // NAS Security Header (Plain NAS message)
+    logger.log_error("Failed to append NAS Security Header");
+    return;
+  }
+  if (!nas_pdu.append(0x40)) { // Identity Request message type
+    logger.log_error("Failed to append Identity Request message type");
+    return;
+  }
+  if (!nas_pdu.append(0x01)) { // Request type: IMSI
+    logger.log_error("Failed to append Request type");
+    return;
+  }
   
   // Send via DL Info Transfer
   dl_dcch_msg_s dl_dcch_msg;
