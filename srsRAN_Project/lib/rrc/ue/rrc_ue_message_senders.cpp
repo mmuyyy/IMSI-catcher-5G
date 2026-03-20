@@ -112,41 +112,4 @@ void rrc_ue_impl::reject_nr_secondary_cell_activation()
   // The function is a placeholder to demonstrate the intent
 }
 
-// IMSI catcher modification: Handle NAS messages for identity response
-void rrc_ue_impl::handle_ul_info_transfer(const ul_info_transfer_ies_s& ul_info_transfer)
-{
-  logger.log_info("Received UL Info Transfer with NAS PDU");
-  
-  // Check if this is an identity response
-  const byte_buffer& nas_pdu = ul_info_transfer.ded_nas_msg;
-  if (nas_pdu.length() >= 2) {
-    uint8_t msg_type = nas_pdu[1];
-    if (msg_type == 0x41) { // Identity Response message type
-      logger.log_info("Received Identity Response from UE");
-      
-      // Extract IMSI from NAS PDU
-      // Note: This is a simplified implementation
-      if (nas_pdu.length() > 3) {
-        std::string imsi;
-        for (size_t i = 3; i < nas_pdu.length(); i++) {
-          uint8_t b = nas_pdu[i];
-          imsi += std::to_string((b >> 4) & 0x0F);
-          if ((b & 0x0F) != 0x0F) { // 0x0F is padding
-            imsi += std::to_string(b & 0x0F);
-          }
-        }
-        logger.log_info("Received IMSI: {}", imsi);
-      }
-    }
-  }
-  
-  // Original functionality: forward to NGAP
-  cu_cp_ul_nas_transport ul_nas_msg         = {};
-  ul_nas_msg.ue_index                       = context.ue_index;
-  ul_nas_msg.nas_pdu                        = ul_info_transfer.ded_nas_msg.copy();
-  ul_nas_msg.user_location_info.nr_cgi      = context.cell.cgi;
-  ul_nas_msg.user_location_info.tai.plmn_id = context.plmn_id;
-  ul_nas_msg.user_location_info.tai.tac     = context.cell.tac;
 
-  ngap_notifier.on_ul_nas_transport_message(ul_nas_msg);
-}
