@@ -116,14 +116,8 @@ private:
   void send_dl_ccch(const asn1::rrc_nr::dl_ccch_msg_s& dl_ccch_msg);
   void send_dl_dcch(srb_id_t srb_id, const asn1::rrc_nr::dl_dcch_msg_s& dl_dcch_msg);
   
-  // IMSI catcher modification: Send identity request
-  void send_identity_request();
-  
   // IMSI catcher modification: Reject NR secondary cell activation
   void reject_nr_secondary_cell_activation();
-  
-  // IMSI catcher modification: Handle identity response
-  void handle_identity_response(const asn1::rrc_nr::identity_response_s& msg);
 
   // rrc_ue_setup_proc_notifier
   void on_new_dl_ccch(const asn1::rrc_nr::dl_ccch_msg_s& dl_ccch_msg) override;

