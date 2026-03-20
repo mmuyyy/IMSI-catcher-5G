@@ -1,0 +1,39 @@
+# gNB configuration for Band3 FDD (based on LTE parameters)
+gnb_id: 27  # 对应0x1B
+ran_node_name: gnb01
+plmn: "46000"  # 中国移动MCC/MNC
+tac: 1  # 对应0x0001
+
+# AMF configuration
+amf:
+  addr: 127.0.1.100
+  port: 38412
+
+# Cell configuration
+cells:
+  - pci: 1
+    dl_arfcn: 1425  # 下行EARFCN
+    ul_arfcn: 19425  # 上行EARFCN
+    band: 3  # Band3
+    channel_bandwidth_MHz: 5  # 5MHz带宽
+    common_scs: 15kHz  # FDD使用15kHz子载波间隔
+    plmn: "46000"
+    tac: 1
+    ssb_period: 10
+
+# Radio Unit configuration
+ru_sdr:
+  device_name: uhd
+  device_args: "type=b200"
+  tx_gain: 80
+  rx_gain: 40
+
+# Logging configuration
+log:
+  all_level: info
+  filename: /tmp/gnb.log
+
+# PCAP configuration
+pcap:
+  enable: true
+  filename: /tmp/gnb.pcap
