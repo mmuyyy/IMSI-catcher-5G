@@ -7,10 +7,22 @@ cu_cp:
   amf:
     addr: 127.0.1.100
     port: 38412
+    bind_addr: 127.0.0.1
     supported_tracking_areas:
       - tac: 1  # 对应0x0001
         plmn_list:
           - plmn: "46000"  # 中国移动MCC/MNC
+            tai_slice_support_list:
+              - sst: 1
+
+# Radio Unit configuration
+ru_sdr:
+  device_driver: uhd
+  device_args: type=b200,num_recv_frames=64,num_send_frames=64
+  srate: 7.68
+  otw_format: sc12
+  tx_gain: 80
+  rx_gain: 40
 
 # Cell configuration
 cell_cfg:
@@ -21,23 +33,15 @@ cell_cfg:
   plmn: "46000"
   tac: 1
   pci: 1
-  ssb_period: 10
-
-# Radio Unit configuration
-ru_sdr:
-  device_driver: uhd
-  device_args: "type=b200"
-  srate: 7.68
-  otw_format: sc12
-  tx_gain: 80
-  rx_gain: 40
 
 # Logging configuration
 log:
-  all_level: info
   filename: /tmp/gnb.log
+  all_level: warning
 
 # PCAP configuration
 pcap:
-  enable: true
-  filename: /tmp/gnb.pcap
+  mac_enable: false
+  mac_filename: /tmp/gnb_mac.pcap
+  ngap_enable: false
+  ngap_filename: /tmp/gnb_ngap.pcap
