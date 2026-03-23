@@ -17,7 +17,7 @@ cell_cfg:
   dl_arfcn: 1425  # 下行EARFCN
   band: 3  # Band3
   channel_bandwidth_MHz: 5  # 5MHz带宽
-  common_scs: 15kHz  # FDD使用15kHz子载波间隔
+  common_scs: 15  # FDD使用15kHz子载波间隔
   plmn: "46000"
   tac: 1
   pci: 1
