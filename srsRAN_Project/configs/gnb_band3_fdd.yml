@@ -15,7 +15,6 @@ cu_cp:
 # Cell configuration
 cell_cfg:
   dl_arfcn: 1425  # 下行EARFCN
-  ul_arfcn: 19425  # 上行EARFCN
   band: 3  # Band3
   channel_bandwidth_MHz: 5  # 5MHz带宽
   common_scs: 15kHz  # FDD使用15kHz子载波间隔
